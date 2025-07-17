@@ -15,6 +15,8 @@ selected_carrier_name = ""  #  To be set after carrier selection
 driver = webdriver.Chrome()
 wait = WebDriverWait(driver, 10)
 driver.maximize_window()
+print("hello")
+print("hello")
 
 # Login
 driver.get("https://dev-linkupmobile.telgoo5.com/index.php")
