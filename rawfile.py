@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import time
 import random
 
@@ -16,9 +17,9 @@ wait = WebDriverWait(driver, 10)
 driver.maximize_window()
 
 # Login
-driver.get("https://dev-flexmobile.telgoo5.com/index.php")
-driver.find_element(By.NAME, "login_user_id").send_keys("qtgflexmobile07")
-driver.find_element(By.NAME, "passwd").send_keys("mid!)cP1115&X")
+driver.get("https://dev-linkupmobile.telgoo5.com/index.php")
+driver.find_element(By.NAME, "login_user_id").send_keys("qtglinkupmobile11")
+driver.find_element(By.NAME, "passwd").send_keys("aap!)cP15&X12")
 driver.find_element(By.ID, "submit_button").click()
 wait.until(EC.presence_of_element_located((By.CLASS_NAME, "sidebar-menu")))
 
@@ -45,13 +46,12 @@ if sim_type == "p":
         print(f"Final fail to click 'Manage Inventory': {e}")
 
     #switch inventory to new view
-    try:
-        switch_button = wait.until(EC.presence_of_element_located((By.XPATH, "//span[contains(@class, 'swithOldNew')]")))
-        if switch_button.is_displayed():
-            switch_button.click()
-            print(" Switched to New View")
-    except:
-        print(" Already in New View or button not visible")
+    switch_buttons = driver.find_elements(By.XPATH, "//span[contains(@class, 'swithOldNew')]")
+    if switch_buttons and switch_buttons[0].is_displayed():
+        switch_buttons[0].click()
+        print("Switched to New View")
+    else:
+        print("Already in New View or switch button not visible")
 
     wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Add Single Unit')]"))).click()
 
@@ -60,12 +60,18 @@ if sim_type == "p":
     select = Select(carrier_dropdown)
     wait.until(lambda d: len(select.options) > 0)
 
-    carrier_options = select.options
+    #  Filter out options like "--Select Carrier--"
+    carrier_options = [
+        option for option in select.options
+        if option.text.strip() and not option.text.strip().lower().startswith('--select')
+    ]
+
     carrier_names = [option.text.strip() for option in carrier_options]
 
     if len(carrier_options) == 1:
         selected_carrier_name = carrier_names[0]
-        print(f" Only one carrier found: {selected_carrier_name}. Auto-selected.")
+        select.select_by_visible_text(selected_carrier_name)
+        print(f"Only one carrier found: {selected_carrier_name}. Auto-selected.")
     else:
         print("Available carriers:")
         for idx, name in enumerate(carrier_names, start=1):
@@ -75,8 +81,10 @@ if sim_type == "p":
             try:
                 choice = int(input("Enter carrier number to select: "))
                 if 1 <= choice <= len(carrier_names):
-                    select.select_by_visible_text(carrier_options[choice - 1].text)
-                    selected_carrier_name = carrier_names[choice - 1]  #  Set carrier name
+                    selected_option = carrier_options[choice - 1]
+                    select.select_by_visible_text(selected_option.text)
+                    selected_carrier_name = selected_option.text.strip()
+                    print(f"Selected carrier: {selected_carrier_name}")
                     break
                 else:
                     print(" Invalid choice. Try again.")
@@ -86,7 +94,7 @@ if sim_type == "p":
     # SIM + IMEI
     sim_number = '8' + ''.join([str(random.randint(0, 9)) for _ in range(19)])
     driver.find_element(By.ID, "esn").send_keys(sim_number)
-    imei_number = ''.join([str(random.randint(3, 9)) for _ in range(14)])
+    imei_number = ''.join([str(random.randint(3, 9)) for _ in range(15)])
     driver.find_element(By.ID, "imei").send_keys(imei_number)
 
     # Assign Employee
@@ -109,9 +117,9 @@ if sim_type == "p":
             if 1 <= agent_choice <= len(agent_options):
                 break
             else:
-                print("❌ Invalid choice. Try again.")
+                print(" Invalid choice. Try again.")
         except ValueError:
-            print("❌ Please enter a valid number.")
+            print(" Please enter a valid number.")
 
     agent_select.select_by_visible_text(agent_options[agent_choice - 1])
 
@@ -137,11 +145,12 @@ wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(@href, 'enrollmen
 wait.until(EC.presence_of_element_located((By.NAME, "zip_code"))).send_keys("98104")
 wait.until(EC.presence_of_element_located((By.ID, "fname"))).send_keys("TEST")
 wait.until(EC.presence_of_element_located((By.ID, "lastname"))).send_keys("TEST")
-wait.until(EC.presence_of_element_located((By.NAME, "trad_address_main"))).send_keys("123 MAIN STRR")
-wait.until(EC.presence_of_element_located((By.NAME, "un_d_address_main"))).send_keys("123 MAIN STRR")
+wait.until(EC.presence_of_element_located((By.NAME, "trad_address_main"))).send_keys("123 MAIN STRRN")
+wait.until(EC.presence_of_element_located((By.NAME, "un_d_address_main"))).send_keys("123 MAIN STRRN")
 email = f"test{random.randint(1000,9999)}@gmail.com"
 wait.until(EC.presence_of_element_located((By.ID, "email"))).send_keys(email)
 
+#--------------plan selection for portin--------------------
 plan_dropdown = wait.until(EC.presence_of_element_located((By.ID, "plan")))
 plan_select = Select(plan_dropdown)
 plans = [opt.text for opt in plan_select.options[1:]]
@@ -152,13 +161,30 @@ plan_select.select_by_visible_text(plans[plan_choice - 1])
 
 wait.until(EC.element_to_be_clickable((By.ID, "submit1"))).click()
 
-enrollment_type = wait.until(EC.presence_of_element_located((By.NAME,"shipment_method_new[]")))
-enrollment_select = Select(enrollment_type)
-enrollment_select.select_by_visible_text("Port In- Customer has a SIM and can give its information. (PC251)")
+#-----------Port in option selection------------
+try:
+    print(" Trying dev-style dropdown...")
+    shipment_select = Select(wait.until(
+        EC.presence_of_element_located((By.XPATH, "//select[contains(@id, 'shipment_method')]"))
+    ))
+    shipment_select.select_by_visible_text("Port in- customer has a sim and can give its information. (PC251)")
+    print(" Selected enrollment on DEV server")
+except (TimeoutException, NoSuchElementException):
+    try:
+        # If not found, try DEMO server dropdown
+        print("Trying demo-style dropdown...")
+        enrollment_type = wait.until(
+            EC.presence_of_element_located((By.NAME, "shipment_method_new[]"))
+        )
+        enrollment_select = Select(enrollment_type)
+        enrollment_select.select_by_visible_text("Port In- Customer has a SIM and can give its information. (PC251)")
+        print(" Selected enrollment on DEMO server")
+    except Exception as e:
+        print(" Failed to select enrollment method on both servers:", str(e))
 
 wait.until(EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'porting_number')]"))).send_keys("1502925616")
 
-
+#------ flow for esim checkbox-----------
 if sim_type == "e":
     esim_checkbox = wait.until(EC.element_to_be_clickable((By.XPATH, "//input[@type='checkbox' and contains(@id, 'is_ESIM')]")))
     esim_checkbox.click()
@@ -171,13 +197,14 @@ else:
 
 time.sleep(2)
 
+#----------- esim portin flow------------
 if sim_type == "e":
     time.sleep(5)
     carrier_dropdown = wait.until(EC.presence_of_element_located((By.NAME, "carrier[]")))
     select = Select(carrier_dropdown)
     wait.until(lambda d: len(select.options) > 0)
 
-    carrier_options = select.options
+    carrier_options = [option for option in select.options if option.text.strip() != "Select Carrier"]
     carrier_names = [option.text.strip() for option in carrier_options]
 
     if len(carrier_options) == 1:
@@ -200,13 +227,14 @@ if sim_type == "e":
             except ValueError:
                 print(" Please enter a valid number.")
 
-# Continue form
+# ------------ esim device------------------------
 time.sleep(3)
-device_id = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".form-control.device_cls")))
-device_id.send_keys("351553464102717")
+if sim_type == "e":
+    device_id = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".form-control.device_cls")))
+    device_id.send_keys("351553464102717")
 
 # Mandatory street type check for BLUECONNECTSATT
-if selected_carrier_name.strip().upper() == "BLUECONNECTSATT,FIERCE":
+if selected_carrier_name.strip().upper() in ("BLUECONNECTSATT", "FIERCE", "LINKUP"):
     time.sleep(7)
     wait.until(EC.presence_of_element_located((By.NAME, "porting_st_type[]"))).send_keys("Ave")
 
@@ -221,7 +249,6 @@ time.sleep(5)
 wait.until(EC.element_to_be_clickable((By.ID, "sub_cash"))).click()
 
 print("\n✅ Port-in completed successfully!")
-
 
 time.sleep(5)
 driver.quit()

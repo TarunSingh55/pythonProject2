@@ -47,17 +47,17 @@ if sim_type == "p":
         )
         driver.execute_script("arguments[0].scrollIntoView(true);", manage_inventory_link)
         driver.execute_script("arguments[0].click();", manage_inventory_link)
-        print("✅ Clicked 'Manage Inventory'")
+        print("Clicked 'Manage Inventory'")
     except:
-        print("❌ Failed to click 'Manage Inventory'")
+        print("Failed to click 'Manage Inventory'")
 
     #addsingleunit
     switch_buttons = driver.find_elements(By.XPATH, "//span[contains(@class, 'swithOldNew')]")
     if switch_buttons and switch_buttons[0].is_displayed():
         switch_buttons[0].click()
-        print("✅ Switched to New View")
+        print("Switched to New View")
     else:
-        print("✅ Already in New View or switch button not visible")
+        print("Already in New View or switch button not visible")
 
     wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Add Single Unit')]"))).click()
 
@@ -66,12 +66,18 @@ if sim_type == "p":
     select = Select(carrier_dropdown)
     wait.until(lambda d: len(select.options) > 0)
 
-    carrier_options = select.options
+    # Filter out options like "--Select Carrier--"
+    carrier_options = [
+        option for option in select.options
+        if option.text.strip() and not option.text.strip().lower().startswith('--select')
+    ]
+
     carrier_names = [option.text.strip() for option in carrier_options]
 
     if len(carrier_options) == 1:
         selected_carrier_name = carrier_names[0]
-        print(f" Only one carrier found: {selected_carrier_name}. Auto-selected.")
+        select.select_by_visible_text(selected_carrier_name)
+        print(f"Only one carrier found: {selected_carrier_name}. Auto-selected.")
     else:
         print("Available carriers:")
         for idx, name in enumerate(carrier_names, start=1):
@@ -81,11 +87,13 @@ if sim_type == "p":
             try:
                 choice = int(input("Enter carrier number to select: "))
                 if 1 <= choice <= len(carrier_names):
-                    select.select_by_visible_text(carrier_options[choice - 1].text)
-                    selected_carrier_name = carrier_names[choice - 1]  #  Set carrier name
+                    selected_option = carrier_options[choice - 1]
+                    select.select_by_visible_text(selected_option.text)
+                    selected_carrier_name = selected_option.text.strip()
+                    print(f"Selected carrier: {selected_carrier_name}")
                     break
                 else:
-                    print(" Invalid choice. Try again.")
+                    print("Invalid choice. Try again.")
             except ValueError:
                 print(" Please enter a valid number.")
 
@@ -115,9 +123,9 @@ if sim_type == "p":
             if 1 <= agent_choice <= len(agent_options):
                 break
             else:
-                print("❌ Invalid choice. Try again.")
+                print(" Invalid choice. Try again.")
         except ValueError:
-            print("❌ Please enter a valid number.")
+            print(" Please enter a valid number.")
 
     agent_select.select_by_visible_text(agent_options[agent_choice - 1])
 
@@ -202,10 +210,10 @@ for link in quick_links:
         driver.execute_script("arguments[0].scrollIntoView(true);", link)
         time.sleep(1)
         driver.execute_script("arguments[0].click();", link)
-        print("✅ Clicked 'Existing subscriber portin'")
+        print("Clicked 'Existing subscriber portin'")
         break
 else:
-    print("❌ Link with text 'Existing subscriber portin' not found.")
+    print("Link with text 'Existing subscriber portin' not found.")
 # Locate link using partial href instead of text
 
 time.sleep(5)
@@ -239,7 +247,7 @@ port_field = wait.until(EC.presence_of_element_located((By.ID, "port_number")))
 port_field.clear()
 port_field.send_keys(mdn_number)
 
-print(f"✅ Auto-filled MDN {mdn_number} into Number to port field")
+print(f"Auto-filled MDN {mdn_number} into Number to port field")
 
 time.sleep(2)
 
