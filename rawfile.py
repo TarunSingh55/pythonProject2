@@ -15,13 +15,11 @@ selected_carrier_name = ""  #  To be set after carrier selection
 driver = webdriver.Chrome()
 wait = WebDriverWait(driver, 10)
 driver.maximize_window()
-print("hello")
-print("hello")
 
 # Login
-driver.get("https://dev-linkupmobile.telgoo5.com/index.php")
-driver.find_element(By.NAME, "login_user_id").send_keys("qtglinkupmobile11")
-driver.find_element(By.NAME, "passwd").send_keys("aap!)cP15&X12")
+driver.get("")
+driver.find_element(By.NAME, "login_user_id").send_keys("")
+driver.find_element(By.NAME, "passwd").send_keys("")
 driver.find_element(By.ID, "submit_button").click()
 wait.until(EC.presence_of_element_located((By.CLASS_NAME, "sidebar-menu")))
 
