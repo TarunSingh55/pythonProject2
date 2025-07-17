@@ -16,9 +16,9 @@ wait = WebDriverWait(driver, 10)
 driver.maximize_window()
 
 # Login
-driver.get("https://dev-flashmobile.telgoo5.com/index.php")
-driver.find_element(By.NAME, "login_user_id").send_keys("qtgflashmobile49")
-driver.find_element(By.NAME, "passwd").send_keys("aap!)cP15&X25")
+driver.get("")
+driver.find_element(By.NAME, "login_user_id").send_keys("")
+driver.find_element(By.NAME, "passwd").send_keys("")
 driver.find_element(By.ID, "submit_button").click()
 wait.until(EC.presence_of_element_located((By.CLASS_NAME, "sidebar-menu")))
 
