@@ -12,11 +12,11 @@ driver = webdriver.Chrome()
 wait = WebDriverWait(driver, 20)
 driver.maximize_window()
 
-driver.get("https://demo-trumpmobile-liberty.telgoo5.com/index.php")
+driver.get("")
 
 # Step 1: Login
-driver.find_element(By.NAME, "login_user_id").send_keys("qtgtrumpmobileliberty79")
-driver.find_element(By.NAME, "passwd").send_keys("mid!)cP1115&X")
+driver.find_element(By.NAME, "login_user_id").send_keys("")
+driver.find_element(By.NAME, "passwd").send_keys("")
 driver.find_element(By.ID, "submit_button").click()
 
 wait.until(EC.presence_of_element_located((By.CLASS_NAME, "sidebar-menu")))
