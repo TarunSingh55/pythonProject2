@@ -12,6 +12,8 @@ driver = webdriver.Chrome()
 wait = WebDriverWait(driver, 20)
 driver.maximize_window()
 
+#simuploqadflow
+
 driver.get("")
 
 # Step 1: Login
@@ -63,17 +65,17 @@ selected_option = carrier_options[choice - 1]
 # Select by visible text
 select.select_by_visible_text(selected_option.text)
 
-print(f"✅ Carrier selected: {selected_option.text}")
+print(f"Carrier selected: {selected_option.text}")
 
 sim_number = '8' + ''.join([str(random.randint(0, 9)) for _ in range(19)])
 driver.find_element(By.ID, "esn").send_keys(sim_number)
 
-print("✅ SIM entered:", sim_number)
+print("SIM entered:", sim_number)
 
 imei_number = ''.join([str(random.randint(0, 9)) for _ in range(15)])
 driver.find_element(By.ID, "imei").send_keys(imei_number)
 
-print("✅ IMEI entered:", imei_number)
+print("IMEI entered:", imei_number)
 
 assign_dropdown = wait.until(EC.presence_of_element_located((By.ID, "assign_user")))
 
@@ -83,7 +85,7 @@ assign_select = Select(assign_dropdown)
 # Select "Employee" by visible text
 assign_select.select_by_visible_text("Employee")
 
-print("✅ 'Employee' selected successfully!")
+print("Employee' selected successfully!")
 
 # Wait for the Employee dropdown
 
@@ -100,7 +102,7 @@ for opt in assign_select.options:
 # Now filter
 options = [opt.text.strip() for opt in assign_select.options if "--Select--" not in opt.text and opt.text.strip() != ""]
 
-print(f"✅ Total valid employee options: {len(options)}")
+print(f"Total valid employee options: {len(options)}")
 
 for i, name in enumerate(options, start=1):
     print(f"{i}. {name}")
@@ -108,7 +110,7 @@ for i, name in enumerate(options, start=1):
 choice = int(input("Enter the number of the employee you want to select: "))
 selected_option = options[choice - 1]
 assign_select.select_by_visible_text(selected_option)
-print(f"✅ Selected employee: {selected_option}")
+print(f"Selected employee: {selected_option}")
 
 from selenium.webdriver.common.keys import Keys
 
@@ -135,20 +137,20 @@ option_to_click = wait.until(EC.element_to_be_clickable(
 ))
 option_to_click.click()
 
-print("✅ Product selected: SIM SIM")
+print("Product selected: SIM SIM")
 
 
-print("✅ Save button clicked!")
+print("Save button clicked!")
 
 time.sleep(5)
-print(f"✅ ESN saved successfully: {sim_number}")
+print(f"ESN saved successfully: {sim_number}")
 
 # After clicking Save button
 save_button = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "product-save")))
 save_button.click()
 
-print("✅ Save button clicked!")
-print(f"✅ ESN saved successfully: {sim_number}")
+print("Save button clicked!")
+print(f"ESN saved successfully: {sim_number}")
 
 # ⏸ Pause script until you confirm SIM is added
 input("⏸ Please verify SIM manually in the UI. Press Enter to continue...")
